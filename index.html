@@ -97,7 +97,7 @@
                 <option value="小美">小美</option>
                 <option value="小明">小明</option>
                 <option value="大壯">大壯</option>
-            </select>
+                </select>
             
             <div id="flavorInputsContainer">
                 <p style="text-align: center; color: #888; margin-top: 20px;">請先選擇購買人以載入目前的數量...</p>
@@ -127,8 +127,10 @@
     </div>
 
     <script>
+        // *******************************************************************
         // *** 請將此處替換為您的 Google Apps Script 網頁應用程式網址 ***
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwy0scd1TVe82PGd99xhFSOhRXJeoUT7y4vkFahGO1WWysOlykd1Sat8o7i717-itP7/exec";
+        // *******************************************************************
         
         const form = document.getElementById('purchaseForm');
         const userRecordSelect = document.getElementById('user_record');
@@ -137,7 +139,7 @@
         const messageDiv = document.getElementById('message');
         const statsDiv = document.getElementById('statsResult');
         const userQuerySelect = document.getElementById('user_query');
-        const ALL_FLAVORS = ['原味', '沙茶', '烤肉']; // 用於確保顯示順序和完整性
+        const ALL_FLAVORS = ['原味', '沙茶', '烤肉']; // 雞胸肉口味
 
         // 用於儲存當前使用者各口味的「原始」購買數量
         let originalQuantities = {}; 
@@ -184,6 +186,7 @@
                     originalQuantities = {};
 
                     ALL_FLAVORS.forEach(flavor => {
+                        // 確保如果沒有紀錄，數量為 0
                         const total = stats.flavorCounts[flavor] || 0;
                         originalQuantities[flavor] = total; // 紀錄原始數量
 
@@ -222,7 +225,7 @@
 
         /**
          * 處理表單提交 (紀錄購買/更新)
-         * 這裡的邏輯是：計算「新數量」與「舊數量」的差異（淨增減量），並以「增減量」作為 Quantity 提交給 Apps Script。
+         * 計算「新數量」與「舊數量」的差異（淨增減量），並以「增減量」（可為負數）作為 Quantity 提交給 Apps Script。
          */ 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -240,15 +243,17 @@
             inputs.forEach(input => {
                 const flavor = input.dataset.flavor;
                 const newQuantity = parseInt(input.value) || 0;
-                const originalQuantity = originalQuantities[flavor]; // 使用儲存的原始數量
+                // 從儲存的原始數量中讀取
+                const originalQuantity = originalQuantities[flavor]; 
                 
+                // 計算淨增減量
                 const netChange = newQuantity - originalQuantity;
                 
                 if (netChange !== 0) {
                     changeRecords.push({
                         user: user,
                         flavor: flavor,
-                        // 提交的數量是「淨增減量」
+                        // 提交的數量是「淨增減量」，可為負數
                         quantity: netChange 
                     });
                 }
@@ -282,10 +287,15 @@
                     if (result.status !== 'success') {
                         allSuccess = false;
                         console.error(`提交 ${record.flavor} 錯誤:`, result.message);
+                        // 如果有錯誤，立即通知並停止後續提交
+                        showMessage(`提交 ${record.flavor} 失敗，請檢查 Apps Script 紀錄。`, 'error');
+                        break;
                     }
                 } catch (error) {
                     allSuccess = false;
                     console.error('Error submitting record:', error);
+                    showMessage('提交時發生網路錯誤。', 'error');
+                    break;
                 }
             }
 
@@ -294,13 +304,7 @@
                 // 更新成功後，重新載入表單資料以顯示最新的總計
                 await fetchUserStatsAndRenderForm(user);
                 // 重新載入查詢統計頁面，以防在 (總計) 模式下
-                if (!userQuerySelect.value) {
-                    fetchStats();
-                } else if (userQuerySelect.value === user) {
-                    fetchStats();
-                }
-            } else {
-                showMessage('部分或全部更新提交失敗，請檢查網路或 Apps Script 紀錄。', 'error');
+                fetchStats();
             }
             submitButton.disabled = false;
         });
@@ -314,7 +318,7 @@
             statsDiv.innerHTML = '<p>載入中...</p>';
             
             try {
-                // Apps Script 的 doGet 接口已能處理個人 (user=名稱) 或總計 (user='') 查詢
+                // Apps Script 的 doGet 接口能處理個人 (user=名稱) 或總計 (user='') 查詢
                 const url = user ? `${APPS_SCRIPT_URL}?user=${encodeURIComponent(user)}` : APPS_SCRIPT_URL;
                 
                 const response = await fetch(url, {
@@ -326,7 +330,8 @@
 
                 if (result.status === 'success') {
                     const stats = result.data;
-                    const queryUser = result.user === 'All' ? '總計' : result.user; // Apps Script 回傳 'All' 表示總計
+                    // Apps Script 會回傳 'All' 表示總計
+                    const queryUser = result.user === 'All' ? '總計 (三人總和)' : result.user; 
                     
                     let html = `<h4>${queryUser} 的購買統計</h4>`;
                     html += '<ul>';
