@@ -1,918 +1,202 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【職等版】加班費計算器</title>
-    
-   <style>
-        /* ====================================
-           基本重置與通用樣式
-           ==================================== */
-        * {
-            margin: 0;
-            padding: 0;
+    <title>雞胸肉購買統計</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f8f8; }
+        .container, .query-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        h1, h2 { text-align: center; color: #333; }
+        label { display: block; margin-top: 10px; font-weight: bold; color: #555; }
+        select, input[type="number"], button { 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 5px; 
+            border-radius: 4px; 
+            border: 1px solid #ccc; 
             box-sizing: border-box; 
         }
-
-        body {
-            background-color: #ffffff;
-            font-family: 'SF Pro Text', 'SF Pro Icons', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; 
-            color: #1d1d1f;
-            padding-bottom: 150px; /* 增加底部留白，避免被固定底欄遮擋 */ 
-            line-height: 1.5; [cite: 184]
+        button { 
+            background: #007bff; /* 藍色按鈕 */
+            color: white; 
+            margin-top: 15px; 
+            cursor: pointer; 
+            transition: background-color 0.3s;
         }
-
-        .calculator-container {
-            width: 95%;
-            max-width: 640px; 
-            margin: 0 auto;
-            padding: 24px 0;
+        button:hover { background: #0056b3; }
+        .stats-display { 
+            margin-top: 15px; 
+            padding: 15px; 
+            border: 1px solid #007bff; 
+            border-radius: 4px; 
+            background-color: #e9f5ff;
         }
-
-        .main-header-container {
-            position: relative; 
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            font-size: 2.2em;
-            font-weight: 700;
-            color: #1d1d1f;
-            margin-bottom: 0; 
-        }
-
-        h2 {
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #1d1d1f; 
-            padding-bottom: 8px;
-            margin-top: 20px;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #e8e8ed;
-        }
-
-        /* 重置按鈕樣式 */
-        .reset-btn {
-            position: absolute; 
-            top: 5px; 
-            right: 0; 
-            z-index: 10; 
-            
-            padding: 6px 15px; 
-            background-color: #ff3b30; 
-            color: white;
-            border: none;
-            border-radius: 20px; 
-            font-size: 0.9em; 
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            white-space: nowrap; 
-        }
-
-        .reset-btn:hover {
-            background-color: #d12e23;
-        }
-        .reset-btn:active {
-             transform: scale(0.95); 
-        }
-
-        /* ------------------------------------
-           其他通用樣式
-           ------------------------------------ */
-        .section-card {
-            background-color: #f5f5f7;
-            padding: 24px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            margin-bottom: 30px;
-            border: 1px solid #e8e8ed;
-        }
-
-        .input-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px; 
-            padding: 8px 0;
-        }
-
-        .input-group label {
-            font-weight: 500;
-            color: #333;
-            flex-basis: 40%; 
-            font-size: 0.95em;
-        }
-
-        /* 針對輸入框和下拉選單 - 核心調整 */
-        input[type="text"], input[type="number"], select {
-            flex-grow: 1;
-            padding: 10px 12px;
-            border: 1px solid #d2d2d7; 
-            border-radius: 8px;
-            font-size: 1em;
-            text-align: right; 
-            max-width: 60%;
-            background-color: #ffffff;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        
-        input[type="text"]:focus, input[type="number"]:focus, select:focus {
-             border-color: #007aff;
-             box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
-            outline: none;
-        }
-        
-        /* 針對月薪輸入框的特殊樣式，讓文字靠右 */
-        #baseSalaryInput {
-            font-family: 'SF Mono', monospace; /* 使用等寬字體，讓數字對齊更美觀 */
-            text-align: right;
-        }
-
-        .primary-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #007aff; 
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.05em;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-
-        .grade-result {
-            text-align: center;
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #ff9500;
-            margin-top: 15px;
-        }
-
-        .data-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #e8e8ed;
-        }
-
-        .result-value {
-            font-weight: 600;
-            color: #007aff;
-            font-size: 1.1em;
-        }
-        
-        .overtime-row {
-            display: grid;
-            grid-template-columns: 1fr auto 40px auto; 
-            grid-template-rows: auto auto; 
-            gap: 5px 15px; 
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #e8e8ed;
-        }
-
-        .overtime-row .row-label {
-            grid-column: 1 / 2;
-            font-weight: 500;
-            color: #333;
-            display: flex;
-            align-items: center;
-            font-size: 0.95em;
-        }
-        .overtime-row .row-label .link-btn {
-            margin-left: 10px;
-            padding: 4px 10px;
-            background-color: #ff9500; 
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.75em;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        .number-input-group {
-            grid-column: 2 / 3;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end; 
-        }
-
-        .number-input-group input[type="number"] {
-            max-width: 55px;
-            flex-grow: 0;
-            margin: 0 4px;
-            padding: 8px 0;
-            text-align: center;
-        }
-
-        .adjust-btn {
-            width: 30px;
-            height: 30px;
-            background-color: #007aff;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.4em;
-            font-weight: 300;
-            line-height: 1;
-            padding: 0;
-            flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .error-text {
-            color: #ff3b30;
-            font-size: 0.9em;
-            text-align: center;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-        
-        /* ====================================
-           5. 底部總結區樣式 (固定在手機底部) - 核心調整
-           ==================================== */
-        #summary-footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #f5f5f7;
-            border-top: 1px solid #e8e8ed;
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
-            padding: 12px 0; /* 調整為上下留白，詳細資訊列自己控制左右留白 */
-            z-index: 10;
-        }
-
-        .summary-flex-container {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 0 20px 12px 20px; /* 左右間距 */
-        }
-        
-        .summary-box {
-            text-align: center;
-            flex: 1;
-            padding: 0 10px;
-        }
-        
-        .summary-box:first-child {
-            border-right: 1px solid #d2d2d7;
-        }
-        
-        .large-text {
-            font-size: 1.6em;
-            font-weight: 700;
-            margin-top: 2px;
-        }
-        
-        .blue-text { color: #007aff;
-        }
-        .orange-text { color: #ff9500;
-        } 
-
-        /* 【修正點】：底部詳細時數對齊 */
-        .details-row {
-            display: flex;
-            justify-content: space-around; /* 大螢幕/平板的間距 */
-            font-size: 0.75em;
-            color: #8e8e93;
-            margin-top: 10px;
-            padding: 8px 20px 0 20px; /* 增加左右間距 */
-            border-top: 1px solid #e8e8ed;
-            flex-wrap: wrap; /* 允許換行 */
-        }
-        
-        .detail-item {
-            font-weight: 500;
-            flex-basis: 50%; /* 預設平分空間 */
-            text-align: center;
-        }
-        
-        .detail-value {
-            font-weight: 600;
-            color: #333;
-        }
-
-
-        /* ====================================
-           MARK: - 媒體查詢：優化手機小螢幕 (響應式設計)
-           ==================================== */
-       @media (max-width: 480px) {
-            
-            /* ... (保留其他不相關的樣式，如 .overtime-row) ... */
-
-            /* 【手機螢幕修正點】：詳細時數改為水平並排 (應使用者要求) */
-            .details-row {
-                /* flex-direction: column; <-- 移除或註解此行，使其維持預設的 row */
-                /* align-items: flex-start; <-- 移除或註解此行 */
-                
-                /* 為了讓兩個項目並排，我們將 justify-content 改為 space-between */
-                justify-content: space-between; 
-                
-                /* 保留 padding 讓其有左右間距 */
-                padding-left: 20px; 
-                padding-right: 20px;
-                gap: 5px; 
-                
-                /* 確保文字不會換行，保持單行顯示 */
-                white-space: nowrap; 
-            }
-            .detail-item {
-                /* flex-basis: 100%; <-- 移除或註解此行，讓它不要佔滿整列 */
-                flex-basis: auto; /* 讓內容決定寬度 */
-                text-align: center; /* 讓文字置中 */
-            }
-        }
+        .stats-display p { margin: 5px 0; font-size: 1.1em; }
+        .total-amount { font-size: 1.4em; color: #d9534f; font-weight: bold; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;}
+        .message { margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
 
-    <div class="calculator-container">
-        
-        <header class="main-header-container">
-            <h1>加班費試算</h1>
-            <button id="resetBtn" class="reset-btn" onclick="resetAllFields()">
-                重設
-            </button>
-        </header>
-        
-        <section class="section-card" id="salary-query">
-            <h2>薪資級距查詢</h2>
+    <div class="container">
+        <h1>新增雞胸肉購買紀錄</h1>
 
-            <div class="input-group select-group">
-                <label for="category-select">職等分類</label>
-   
-                <select id="category-select">
-                    <option value="分類">分類</option>
-                    <option value="評價">評價</option>
-                </select>
-            </div>
+        <form id="purchaseForm">
+            <label for="user_record">購買人：</label>
+            <select id="user_record" name="user" required>
+                <option value="小美">小美</option>
+                <option value="小明">小明</option>
+                <option value="大壯">大壯</option>
+            </select>
 
-            <div class="input-group select-group">
-  
-                <label for="grade-select">等數</label>
-                <select id="grade-select">
-                    </select>
-            </div>
+            <label for="flavor">口味：</label>
+            <select id="flavor" name="flavor" required>
+                <option value="原味">原味</option>
+                <option value="沙茶">沙茶</option>
+                <option value="烤肉">烤肉</option>
+            </select>
 
-            <div class="input-group select-group">
-                <label for="level-select">級數</label>
-     
-                <select id="level-select">
-                    </select>
-            </div>
-            
-            <button id="updateSalaryBtn" class="primary-btn" onclick="updateBaseSalaryFromGrade()">
-                確認級距，更新底薪
-            </button>
- 
-            <div id="salaryQueryResult" class="grade-result"></div>
-        </section>
+            <label for="quantity">數量：</label>
+            <input type="number" id="quantity" name="quantity" min="1" value="1" required>
 
+            <button type="submit">紀錄購買</button>
+        </form>
 
-        <section class="section-card" id="base-info">
-            <h2>基本資料</h2>
-
-            <div class="data-row input-row">
-                <label for="baseSalaryInput">底薪 (月薪):</label>
-                <input type="text" id="baseSalaryInput" placeholder="請輸入金額" value="0" min="0">
+        <div id="message" class="message" style="display:none;"></div>
+    </div>
     
-            </div>
-
-            <div class="data-row result-row">
-                <label>時薪 (底薪/30/8):</label>
-                <span id="hourlyRateDisplay" class="result-value">0.00 TWD</span>
-            </div>
-             <p id="baseSalaryError" class="error-text" style="display:none;"></p>
-        </section>
-
-
-      
-        <section class="section-card" id="overtime-days">
-            <h2>加班費試算 (單位: 天)</h2>
-
-            <div class="overtime-row">
-                <div class="row-label">平日加班天數 (3h):</div>
-                <div class="number-input-group">
-                    <button class="adjust-btn minus" onclick="adjustValue('weekdayDaysInput', -1)">-</button>
-          
-                    <input type="number" id="weekdayDaysInput" value="0" min="0">
-                    <button class="adjust-btn plus" onclick="adjustValue('weekdayDaysInput', 1)">+</button>
-                </div>
-                <span class="unit-text">天</span>
-                <span id="weekdayPay" class="amount-display">0 TWD</span>
-          
-                <p class="formula-text">公式: 時薪 * (1.33*2 + 1.66*1) * 天數 (4.32)</p>
-            </div>
-            
-            <div class="overtime-row meal-row">
-                <div class="row-label">
-                    誤餐費天數 ($120/天): 
+    <div class="query-container">
+        <h2>個人購買統計查詢</h2>
         
-                    <button class="link-btn" onclick="linkMealAllowance()">連動</button>
-                </div>
-                <div class="number-input-group">
-                    <button class="adjust-btn minus" onclick="adjustValue('mealAllowanceDaysInput', -1)">-</button>
-                    <input type="number" id="mealAllowanceDaysInput" value="0" min="0">
-     
-                    <button class="adjust-btn plus" onclick="adjustValue('mealAllowanceDaysInput', 1)">+</button>
-                </div>
-                <span class="unit-text">天</span>
-                <span id="mealPay" class="amount-display">0 TWD</span>
-                <p class="formula-text">公式: 120 * 天數</p>
-         
-            </div>
-
-            <div class="overtime-row">
-                <div class="row-label">假日加班天數 (8h):</div>
-                 <div class="number-input-group">
-                    <button class="adjust-btn minus" onclick="adjustValue('holidayDaysInput', -1)">-</button>
-                    <input type="number" id="holidayDaysInput" value="0" min="0">
-                    <button class="adjust-btn plus" onclick="adjustValue('holidayDaysInput', 1)">+</button>
-                </div>
-                <span class="unit-text">天</span>
-                <span id="holidayPay" class="amount-display">0 TWD</span>
-                <p class="formula-text">公式: 時薪 * (1.33*2 + 1.66*6) * 天數 (12.62)</p>
-            </div>
-
-            <div class="overtime-row">
-                <div class="row-label">國定假日加班天數:</div>
-                <div class="number-input-group">
-                    <button class="adjust-btn minus" onclick="adjustValue('nationalHolidayDaysInput', -1)">-</button>
-                
-                    <input type="number" id="nationalHolidayDaysInput" value="0" min="0">
-                    <button class="adjust-btn plus" onclick="adjustValue('nationalHolidayDaysInput', 1)">+</button>
-                </div>
-                <span class="unit-text">天</span>
-                <span id="nationalHolidayPay" class="amount-display">0 TWD</span>
-                
-                <p class="formula-text">公式: 日薪 * 天數</p>
-            </div>
-
-            <div class="overtime-row">
-                <div class="row-label">8+4 加班天數 (12h):</div>
-                <div class="number-input-group">
-                    <button class="adjust-btn minus" onclick="adjustValue('eightPlusFourDaysInput', -1)">-</button>
-           
-                    <input type="number" id="eightPlusFourDaysInput" value="0" min="0">
-                    <button class="adjust-btn plus" onclick="adjustValue('eightPlusFourDaysInput', 1)">+</button>
-                </div>
-                <span class="unit-text">天</span>
-                <span id="eightPlusFourPay" class="amount-display">0 TWD</span>
-           
-                <p class="formula-text">公式: 時薪 * (1.33*2 + 1.66*6 + 2.0*4) * 天數 (20.62)</p>
-            </div>
-        </section>
-
-        <section class="section-card" id="overtime-hours">
-            <h2>其他加班時數 (單位: 小時)</h2>
-            <div class="overtime-row">
-                <div class="row-label">突發加班時數:</div>
-          
-                <div class="number-input-group">
-                    <button class="adjust-btn minus" onclick="adjustValue('suddenOvertimeHoursInput', -1)">-</button>
-                    <input type="number" id="suddenOvertimeHoursInput" value="0.0" step="0.5" min="0">
-                    <button class="adjust-btn plus" onclick="adjustValue('suddenOvertimeHoursInput', 1)">+</button>
-                </div>
-    
-                <span class="unit-text">時</span>
-                <span id="suddenPay" class="amount-display">0 TWD</span>
-                <p class="formula-text">公式: 時薪 * 2.0 * 時數</p>
-            </div>
-        </section>
+        <label for="user_query">查詢身份：</label>
+        <select id="user_query" required>
+            <option value="小美">小美</option>
+            <option value="小明">小明</option>
+            <option value="大壯">大壯</option>
+            <option value="">（總計）</option> </select>
         
-        <p class="error-text">不要問公司能給你什麼，而是你能給公司什麼</p>
+        <button onclick="fetchStats()">查詢統計</button>
+        
+        <div id="statsResult" class="stats-display">
+            <p>請選擇身份並點擊「查詢統計」。</p>
+        </div>
     </div>
 
-    <footer id="summary-footer">
-        <div class="summary-flex-container">
-            <div class="summary-box">
-                <p class="summary-label">總時數 (h)</p>
-                <p id="totalHours" class="summary-value large-text blue-text">0.0</p>
-            </div>
-
-            <div class="summary-box">
-               
-                <p class="summary-label">總金額 (TWD)</p>
-                <p id="totalAmount" class="summary-value large-text orange-text">0</p>
-            </div>
-        </div>
-        
-        <div class="details-row">
-            <span class="detail-item">勞基法時數: <span id="laborLawHours" class="detail-value">0.0 h</span></span>
-            <span class="detail-item">非勞基法加班時數: <span id="nonLaborLawHours" class="detail-value">0.0 h</span></span>
-      
-        </div>
-    </footer>
-
-
     <script>
-        // MARK: - 薪資資料結構化 (SalaryData)
-        const SalaryData = (() => {
-            const executiveGrades = [14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3];
-            const staffGrades = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-            const allLevels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-            const executiveSalaryMap = {
-                14: [71022, 72218, 73415, 74610, 75807, 77003, 78199, 79396, 80591, 81788, 82984, 84327, 85669, 87011, 88354],
-                13: [65040, 66237, 67433, 68629, 69825, 71022, 72218, 73415, 74610, 75807, 77003, 78199, 79396, 80591, 81788],
-                12: [60555, 61452, 62348, 
-                63246, 64143, 65040, 66237, 67433, 68629, 69825, 71022, 72218, 73415, 74610, 75807],
-                11: [56069, 56965, 57863, 58760, 59657, 60555, 61452, 62348, 63246, 64143, 65040, 66237, 67433, 68629, 69825],
-                10: [51582, 52480, 53377, 54274, 55172, 56069, 57863, 58760, 59657, 60555, 61452, 62348, 63246, 64143, 0], 
-                 9: [47463, 47994, 48891, 49789, 50685, 51582, 
-                52480, 53377, 54274, 55172, 56069, 56965, 57863, 58760, 59657],
-                 8: [43508, 44299, 45090, 45881, 46672, 47463, 47994, 48891, 49789, 50685, 51582, 52480, 53377, 54274, 55172],
-                 7: [39553, 40343, 41135, 41926, 42717, 43508, 44299, 45090, 45881, 46672, 47463, 47994, 48891, 49789, 50685],
-                 6: [35598, 36389, 37179, 37970, 38762, 39553, 40343, 41135, 41926, 42717, 
-                43508, 44299, 45090, 45881, 46672],
-                 5: [31642, 32433, 33225, 34015, 34806, 35598, 36389, 37179, 37970, 38762, 39553, 40343, 41135, 41926, 42717],
-                 4: [0, 28478, 29269, 30060, 30851, 31642, 32433, 33225, 34015, 34806, 35598, 36389, 37179, 37970, 38762], 
-                 3: [0, 0, 0, 0, 0, 28478, 29269, 30060, 30851, 31642, 32433, 
-                33225, 34015, 35598, 0], 
-            };
-            const baseSalaryMap = {
-                 1: [31642, 32433, 33225, 34015, 34806, 35598, 36389, 37179, 37970, 38762, 39553, 40343, 41135, 41926, 42717],
-                 2: [43508, 44299, 45090, 45881, 46672, 47463, 47994, 48891, 49789, 50685, 51582, 52480, 53377, 54274, 55172],
-                
-                 3: [47463, 47994, 48891, 49789, 50685, 51582, 52480, 53377, 54274, 55172, 56069, 56965, 57863, 58760, 59657],
-                 4: [51582, 52480, 53377, 54274, 55172, 56069, 56965, 57863, 58760, 59657, 60555, 61542, 62348, 63246, 64143],
-                 5: [56069, 56965, 57863, 58760, 59657, 60555, 61542, 62348, 63246, 64143, 65040, 66237, 68629, 69825, 0],
-                 6: [60555, 61542, 
-                62348, 63246, 64143, 65040, 66237, 67433, 68629, 69825, 71022, 72218, 73415, 74610, 75807],
-                 7: [65040, 66237, 67433, 68629, 69825, 71022, 72218, 73415, 74610, 75807, 77003, 78199, 79396, 80591, 81788],
-                 8: [71022, 72218, 73415, 74610, 75807, 77003, 78199, 79396, 80591, 81788, 82984, 84327, 85669, 87011, 88354],
-                 9: [77003, 78199, 79396, 80591, 81788, 82984, 
-                84327, 85669, 87011, 88354, 89696, 91710, 93723, 95738, 97751],
-                10: [82984, 84327, 85669, 87011, 88354, 89696, 91710, 93723, 95738, 97751, 99765, 102449, 105134, 107819, 110504], 
-                11: [89696, 91710, 93723, 95738, 97751, 99765, 102449, 105134, 107819, 110504, 113189, 116209, 119229, 122249, 125270], 
-                12: [99765, 102449, 105134, 107819, 110504, 113189, 116209, 119229, 122249, 125270, 128290, 
-                131310, 134331, 0, 0], 
-                13: [113189, 116209, 119229, 122249, 125270, 128290, 131310, 134331, 137352, 0, 0, 0, 0, 0, 0], 
-                14: [128290, 131310, 134331, 137352, 140372, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-                15: [143221, 146255, 143395, 152264, 155279, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] 
-            };
- 
-            const getSalary = (category, grade, level) => {
-                let salaryRow = null;
-                const gradeInt = parseInt(grade);
-                const levelInt = parseInt(level);
+        // *** 請將此處替換為您的 Google Apps Script 網頁應用程式網址 ***
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwy0scd1TVe82PGd99xhFSOhRXJeoUT7y4vkFahGO1WWysOlykd1Sat8o7i717-itP7/exec"; 
 
-                if (category === "分類") {
-                    salaryRow = baseSalaryMap[gradeInt];
-                } else if (category === "評價") {
-                    salaryRow = executiveSalaryMap[gradeInt];
-                }
+        const form = document.getElementById('purchaseForm');
+        const messageDiv = document.getElementById('message');
+        const statsDiv = document.getElementById('statsResult');
+        const userQuerySelect = document.getElementById('user_query');
 
-                if (salaryRow && levelInt >= 1 && levelInt <= salaryRow.length) {
-                    const salary = salaryRow[levelInt - 1];
-                    return salary > 0 ?
-                    salary : null;
-                }
-                return null;
-            };
-
-            return { executiveGrades, staffGrades, allLevels, getSalary };
-        })();
-
-
-        // MARK: - 工具函數 (Utility Functions)
+        const ALL_FLAVORS = ['原味', '沙茶', '烤肉']; // 用於確保顯示順序和完整性
         
-        // 【新增】：為輸入框格式化千分位
-        const formatNumberWithCommas = (number) => {
-            if (typeof number !== 'number' || isNaN(number)) return '';
-            // 使用 toLocaleString 處理千分位，並確保不顯示小數
-            return number.toLocaleString('zh-TW', { maximumFractionDigits: 0 });
-        };
-        
-        // 【新增】：移除字串中的千分位符號
-        const removeCommas = (str) => {
-            if (typeof str === 'string') {
-                return str.replace(/,/g, '');
-            }
-            return String(str).replace(/,/g, '');
+        /**
+         * 顯示訊息
+         */
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
         }
 
-        const formatCurrency = (number) => {
-            if (typeof number !== 'number' || isNaN(number)) return '0 TWD';
-            return new Intl.NumberFormat('zh-TW', {
-                style: 'currency',
-                currency: 'TWD',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(number);
-        };
-        
-        const formatDecimal = (number, fractionDigits = 2) => {
-            if (typeof number !== 'number' || isNaN(number)) return '0.00';
-            return number.toFixed(fractionDigits);
-        };
-        
-        const formatAmountDisplay = (amount) => {
-             const display = formatCurrency(amount);
-             // 調整顏色為蘋果綠
-            return `<span style="color: ${amount > 0 ? '#34c759' : '#777'};">${display}</span>`;
-        };
-        
-        // MARK: - 計算邏輯 (OvertimeCalculator)
-        const OvertimeCalculator = (() => {
-            const monthlyWorkDays = 30;
-            const dailyWorkHours = 8;
-            const mealAllowancePerDay = 120.0;
+        /**
+         * 處理表單提交 (紀錄購買)
+         */
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            const weekdayOvertimeFactor = (1.33 * 2) + (1.66 * 1); // 4.32
-            const holidayOvertimeFactor = (1.33 * 2) + (1.66 * 6); // 12.62
-            const eightPlusFourOvertimeFactor = (1.33 * 2) + (1.66 * 6) + (2.0 * 4); // 20.62
-
-            const calculateHourlyRate = (monthlySalary) => {
-                return monthlySalary / monthlyWorkDays / dailyWorkHours;
+            const formData = new FormData(form);
+            // 注意：POST 傳送的欄位名稱要與 Apps Script 的 e.parameter.user 對應
+            const data = {
+                user: formData.get('user'), 
+                flavor: formData.get('flavor'),
+                quantity: formData.get('quantity')
             };
 
-            const calculateWeekdayOvertime = (hourlyRate, days) => {
-                return hourlyRate * weekdayOvertimeFactor * days;
-            };
-
-            const calculateHolidayOvertime = (hourlyRate, days) => {
-                return hourlyRate * holidayOvertimeFactor * days;
-            };
-
-            const calculateNationalHolidayOvertime = (monthlySalary, days) => {
-                return (monthlySalary / monthlyWorkDays) * days;
-            };
-
-            const calculateEightPlusFourOvertime = (hourlyRate, days) => {
-                return hourlyRate * eightPlusFourOvertimeFactor * days;
-            };
-
-            const calculateSuddenOvertime = (hourlyRate, hours) => {
-                return hourlyRate * 2.0 * hours;
-            };
-            
-            const calculateMealAllowance = (days) => {
-                return days * mealAllowancePerDay;
-            };
-            
-            return {
-                calculateHourlyRate,
-                calculateWeekdayOvertime,
-                calculateHolidayOvertime,
-                calculateNationalHolidayOvertime,
-                calculateEightPlusFourOvertime,
-                calculateSuddenOvertime,
-                calculateMealAllowance,
-                weekdayOvertimeFactor,
-                holidayOvertimeFactor,
-                eightPlusFourOvertimeFactor
-            };
-        })();
-
-
-        // MARK: - 介面操作與狀態管理 
-
-        const $ = (id) => document.getElementById(id);
-        
-        const elements = {
-            categorySelect: $('category-select'),
-            gradeSelect: $('grade-select'),
-            levelSelect: $('level-select'),
-            salaryQueryResult: $('salaryQueryResult'),
-            baseSalaryInput: $('baseSalaryInput'),
-            baseSalaryError: $('baseSalaryError'),
-          
-            hourlyRateDisplay: $('hourlyRateDisplay'),
-            
-            weekdayDaysInput: $('weekdayDaysInput'),
-            mealAllowanceDaysInput: $('mealAllowanceDaysInput'),
-            holidayDaysInput: $('holidayDaysInput'),
-            nationalHolidayDaysInput: $('nationalHolidayDaysInput'),
-            eightPlusFourDaysInput: $('eightPlusFourDaysInput'),
-            suddenOvertimeHoursInput: $('suddenOvertimeHoursInput'),
-       
-            weekdayPay: $('weekdayPay'),
-            mealPay: $('mealPay'),
-            holidayPay: $('holidayPay'),
-            nationalHolidayPay: $('nationalHolidayPay'),
-            eightPlusFourPay: $('eightPlusFourPay'),
-            suddenPay: $('suddenPay'),
-            
-            totalHours: $('totalHours'),
-            totalAmount: $('totalAmount'),
-            laborLawHours: $('laborLawHours'),
-            nonLaborLawHours: $('nonLaborLawHours')
-        };
-        let currentHourlyRate = 0.0;
-        
-        // 核心計算和更新 UI 函數
-        function calculateAndRender() {
-            // 讀取月薪時，先移除千分位符號
-            const rawValue = removeCommas(elements.baseSalaryInput.value); 
-            const baseSalary = parseFloat(rawValue) || 0;
-
-            if (baseSalary === 0 && elements.baseSalaryInput.value.trim() !== '' && elements.baseSalaryInput.value.trim() !== '0') {
-                 elements.baseSalaryError.style.display = 'block';
-                elements.baseSalaryError.textContent = '請輸入底薪或從級距查詢更新底薪！';
-            } else {
-                 elements.baseSalaryError.style.display = 'none';
-            }
-
-            // 1. 計算時薪
-            currentHourlyRate = OvertimeCalculator.calculateHourlyRate(baseSalary);
-            elements.hourlyRateDisplay.textContent = formatDecimal(currentHourlyRate, 2) + ' TWD';
-
-            // 2. 獲取所有天數/時數輸入
-            const weekdayDays = parseInt(elements.weekdayDaysInput.value) ||
-            0;
-            const mealAllowanceDays = parseInt(elements.mealAllowanceDaysInput.value) || 0;
-            const holidayDays = parseInt(elements.holidayDaysInput.value) || 0;
-            const nationalHolidayDays = parseInt(elements.nationalHolidayDaysInput.value) || 0;
-            const eightPlusFourDays = parseInt(elements.eightPlusFourDaysInput.value) || 0;
-            const suddenOvertimeHours = parseFloat(elements.suddenOvertimeHoursInput.value) || 0.0;
-            
-            // 3. 計算各項金額
-            const weekdayAmount = OvertimeCalculator.calculateWeekdayOvertime(currentHourlyRate, weekdayDays);
-            const mealAmount = OvertimeCalculator.calculateMealAllowance(mealAllowanceDays);
-            const holidayAmount = OvertimeCalculator.calculateHolidayOvertime(currentHourlyRate, holidayDays);
-            const nationalHolidayAmount = OvertimeCalculator.calculateNationalHolidayOvertime(baseSalary, nationalHolidayDays);
-            const eightPlusFourAmount = OvertimeCalculator.calculateEightPlusFourOvertime(currentHourlyRate, eightPlusFourDays);
-            const suddenAmount = OvertimeCalculator.calculateSuddenOvertime(currentHourlyRate, suddenOvertimeHours);
-            
-            // 4. 更新各項顯示
-            elements.weekdayPay.innerHTML = formatAmountDisplay(weekdayAmount);
-            elements.mealPay.innerHTML = formatAmountDisplay(mealAmount);
-            elements.holidayPay.innerHTML = formatAmountDisplay(holidayAmount);
-            elements.nationalHolidayPay.innerHTML = formatAmountDisplay(nationalHolidayAmount);
-            elements.eightPlusFourPay.innerHTML = formatAmountDisplay(eightPlusFourAmount);
-            elements.suddenPay.innerHTML = formatAmountDisplay(suddenAmount);
-            
-            // 5. 總計計算 
-            const totalAmount = weekdayAmount + mealAmount + holidayAmount + nationalHolidayAmount + eightPlusFourAmount + suddenAmount;
-            const laborLawHours = (weekdayDays * 3) + (holidayDays * 8) + (eightPlusFourDays * 12);
-            const nonLaborLawOvertimeHours = (nationalHolidayDays * 8) + suddenOvertimeHours;
-            const totalHours = laborLawHours + nonLaborLawOvertimeHours;
-            
-            // 6. 更新底部總結
-            elements.totalHours.textContent = formatDecimal(totalHours, 1);
-            elements.totalAmount.textContent = formatCurrency(totalAmount);
-            elements.laborLawHours.textContent = formatDecimal(laborLawHours, 1) + ' h';
-            elements.nonLaborLawHours.textContent = formatDecimal(nonLaborLawOvertimeHours, 1) + ' h';
-        }
-        
-        // MARK: - 薪資級距查詢相關邏輯
-        
-        function updateGradeOptions() {
-            const category = elements.categorySelect.value;
-            const grades = category === '評價' ? SalaryData.executiveGrades : SalaryData.staffGrades;
-            elements.gradeSelect.innerHTML = grades.map(g => 
-                `<option value="${g}" ${g === 9 ? 'selected' : ''}>${g} 等</option>`
-            ).join('');
-            updateLevelOptions();
-        }
-        
-        function updateLevelOptions() {
-             elements.levelSelect.innerHTML = SalaryData.allLevels.map(l => 
-                `<option value="${l}" ${l === 1 ? 'selected' : ''}>${l} 級</option>`
-            ).join('');
-        }
-
-        function updateBaseSalaryFromGrade() {
-            const category = elements.categorySelect.value;
-            const grade = elements.gradeSelect.value;
-            const level = elements.levelSelect.value;
-            
-            const salary = SalaryData.getSalary(category, grade, level);
-            if (salary !== null) {
-                // 更新底薪時，使用千分位格式化
-                elements.baseSalaryInput.value = formatNumberWithCommas(salary);
-                elements.salaryQueryResult.style.color = '#34c759';
-                elements.salaryQueryResult.textContent = `✅ 查詢成功: ${formatCurrency(salary)}`;
-                calculateAndRender();
-            } else {
-                elements.baseSalaryInput.value = "0";
-                elements.salaryQueryResult.style.color = '#ff3b30';
-                elements.salaryQueryResult.textContent = `❌ 無法查詢 (請確認級數是否存在)`;
-                calculateAndRender();
-            }
-        }
-        
-        // MARK: - 輸入值調整函數 (供 +/- 按鈕使用)
-        function adjustValue(elementId, adjustment) {
-            const inputElement = $(elementId);
-            let currentValue = parseFloat(inputElement.value) || 0;
-            let newValue;
-            let step = 1;
-            
-            if (elementId === 'suddenOvertimeHoursInput') {
-                step = 0.5;
-                newValue = currentValue + adjustment * step;
-                inputElement.value = Math.max(0, newValue).toFixed(1);
-            } else {
-                newValue = currentValue + adjustment * step;
-                inputElement.value = Math.max(0, newValue).toFixed(0);
-            }
-            calculateAndRender();
-        }
-        
-        // MARK: - 其他操作與事件監聽
-        
-        function linkMealAllowance() {
-            elements.mealAllowanceDaysInput.value = elements.weekdayDaysInput.value;
-            calculateAndRender();
-        }
-
-        // 全部重置
-        function resetAllFields() {
-            elements.baseSalaryInput.value = "0"; // 重置時為 0
-            elements.weekdayDaysInput.value = "0";
-            elements.mealAllowanceDaysInput.value = "0";
-            elements.holidayDaysInput.value = "0";
-            elements.nationalHolidayDaysInput.value = "0";
-            elements.eightPlusFourDaysInput.value = "0";
-            elements.suddenOvertimeHoursInput.value = "0.0";
-            elements.categorySelect.value = "分類";
-            updateGradeOptions();
-            elements.levelSelect.value = "1";
-            elements.salaryQueryResult.textContent = '';
-            calculateAndRender();
-        }
-
-        function setupEventListeners() {
-            
-            // 將 baseSalaryInput 從通用輸入監聽器中獨立出來
-            const inputsToListen = [
-                elements.weekdayDaysInput,
-                elements.mealAllowanceDaysInput,
-                elements.holidayDaysInput,
-                elements.nationalHolidayDaysInput,
-                elements.eightPlusFourDaysInput,
-                elements.suddenOvertimeHoursInput
-            ];
-            
-            // 監聽非月薪輸入框的改變事件
-            inputsToListen.forEach(input => {
-                input.addEventListener('input', calculateAndRender);
-                input.addEventListener('blur', (e) => {
-                    // 通用輸入框的數值修復
-                    if (e.target.id.includes('Days')) {
-                         e.target.value = (parseInt(e.target.value) || 0).toFixed(0);
-                    } else if (e.target.id === 'suddenOvertimeHoursInput') {
-                         e.target.value = (parseFloat(e.target.value) || 0.0).toFixed(1);
-                    }
-                    calculateAndRender();
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(data).toString()
                 });
-            });
-            
-            // 針對 baseSalaryInput 設置專門的 focus/blur 處理 (千分位)
-            
-            // 1. input 事件 (即時計算)
-            elements.baseSalaryInput.addEventListener('input', calculateAndRender);
-            
-            // 2. focus 事件 (移除千分位)
-            elements.baseSalaryInput.addEventListener('focus', (e) => {
-                e.target.value = removeCommas(e.target.value);
-                e.target.select(); 
-            });
 
-            // 3. blur 事件 (新增千分位)
-            elements.baseSalaryInput.addEventListener('blur', (e) => {
-                const rawValue = parseFloat(removeCommas(e.target.value)) || 0;
+                const result = await response.json();
                 
-                // 只有當值大於 0 時才進行格式化
-                if (rawValue > 0) {
-                     e.target.value = formatNumberWithCommas(rawValue);
+                if (result.status === 'success') {
+                    showMessage('購買紀錄成功！', 'success');
+                    // 可選：紀錄成功後，自動查詢該使用者的統計
+                    userQuerySelect.value = data.user; 
+                    fetchStats(); 
                 } else {
-                     e.target.value = '0';
+                    showMessage('紀錄失敗: ' + result.message, 'error');
                 }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('網路或伺服器錯誤，請檢查主控台。', 'error');
+            }
+        });
+
+        /**
+         * 獲取統計資料
+         */
+        async function fetchStats() {
+            statsDiv.innerHTML = '<p>查詢中...</p>';
+            
+            const selectedUser = userQuerySelect.value;
+            // 建立帶有 user 參數的 URL
+            // 如果 selectedUser 為空字串（總計），則不帶 user 參數
+            const fetchURL = selectedUser ? `${APPS_SCRIPT_URL}?user=${encodeURIComponent(selectedUser)}` : APPS_SCRIPT_URL;
+
+            try {
+                const response = await fetch(fetchURL, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
                 
-                // 重新計算 (確保格式化後的結果被計入)
-                calculateAndRender();
-            });
+                const result = await response.json();
 
-
-            // 監聽級距選擇器變化，更新選項
-            elements.categorySelect.addEventListener('change', updateGradeOptions);
-            elements.gradeSelect.addEventListener('change', updateLevelOptions);
+                if (result.status === 'success') {
+                    const stats = result.data;
+                    const queryUser = result.user === 'All' ? '總計' : result.user;
+                    
+                    let html = `<h4>${queryUser} 的購買統計</h4>`;
+                    html += '<ul>';
+                    
+                    ALL_FLAVORS.forEach(flavor => {
+                        const total = stats.flavorCounts[flavor] || 0;
+                        html += `<li><strong>${flavor}：</strong> ${total} 包</li>`;
+                    });
+                    
+                    html += `</ul>`;
+                    html += `<p><strong>總購買數量：</strong> ${stats.totalQuantity} 包</p>`;
+                    html += `<p class="total-amount"><strong>總金額：</strong> $${stats.totalAmount.toLocaleString()} 元</p>`;
+                    
+                    statsDiv.innerHTML = html;
+                } else {
+                    statsDiv.innerHTML = `<p class="error">統計錯誤：${result.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+                statsDiv.innerHTML = '<p class="error">無法載入統計資料。</p>';
+            }
         }
 
-        window.onload = () => {
-            updateGradeOptions(); 
-            calculateAndRender();
-            setupEventListeners();
-        };
+        // 頁面載入時，預設查詢總計
+        document.addEventListener('DOMContentLoaded', () => {
+             userQuerySelect.value = ""; // 設置為總計
+             fetchStats();
+        });
 
-        window.linkMealAllowance = linkMealAllowance;
-        window.resetAllFields = resetAllFields;
-        window.updateBaseSalaryFromGrade = updateBaseSalaryFromGrade;
-        window.adjustValue = adjustValue;
     </script>
-
 </body>
 </html>
