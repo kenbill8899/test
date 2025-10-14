@@ -1,203 +1,202 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>雞胸肉購買統計</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f8f8; }
-        .container, .query-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        h1, h2 { text-align: center; color: #333; }
-        label { display: block; margin-top: 10px; font-weight: bold; color: #555; }
-        select, input[type="number"], button { 
-            width: 100%; 
-            padding: 10px; 
-            margin-top: 5px; 
-            border-radius: 4px; 
-            border: 1px solid #ccc; 
-            box-sizing: border-box; 
-        }
-        button { 
-            background: #007bff; /* 藍色按鈕 */
-            color: white; 
-            margin-top: 15px; 
-            cursor: pointer; 
-            transition: background-color 0.3s;
-        }
-        button:hover { background: #0056b3; }
-        .stats-display { 
-            margin-top: 15px; 
-            padding: 15px; 
-            border: 1px solid #007bff; 
-            border-radius: 4px; 
-            background-color: #e9f5ff;
-        }
-        .stats-display p { margin: 5px 0; font-size: 1.1em; }
-        .total-amount { font-size: 1.4em; color: #d9534f; font-weight: bold; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;}
-        .message { margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雞胸肉購買統計</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f8f8; }
+        .container, .query-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        h1, h2 { text-align: center; color: #333; }
+        label { display: block; margin-top: 10px; font-weight: bold; color: #555; }
+        select, input[type="number"], button { 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 5px; 
+            border-radius: 4px; 
+            border: 1px solid #ccc; 
+            box-sizing: border-box; 
+        }
+        button { 
+            background: #007bff; /* 藍色按鈕 */
+            color: white; 
+            margin-top: 15px; 
+            cursor: pointer; 
+            transition: background-color 0.3s;
+        }
+        button:hover { background: #0056b3; }
+        .stats-display { 
+            margin-top: 15px; 
+            padding: 15px; 
+            border: 1px solid #007bff; 
+            border-radius: 4px; 
+            background-color: #e9f5ff;
+        }
+        .stats-display p { margin: 5px 0; font-size: 1.1em; }
+        .total-amount { font-size: 1.4em; color: #d9534f; font-weight: bold; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;}
+        .message { margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>新增雞胸肉購買紀錄</h1>
+    <div class="container">
+        <h1>新增雞胸肉購買紀錄</h1>
 
-        <form id="purchaseForm">
-            <label for="user_record">購買人：</label>
-            <select id="user_record" name="user" required>
-                <option value="小美">小美</option>
-                <option value="小明">小明</option>
-                <option value="大壯">大壯</option>
-            </select>
+        <form id="purchaseForm">
+            <label for="user_record">購買人：</label>
+            <select id="user_record" name="user" required>
+                <option value="小美">小美</option>
+                <option value="小明">小明</option>
+                <option value="大壯">大壯</option>
+            </select>
 
-            <label for="flavor">口味：</label>
-            <select id="flavor" name="flavor" required>
-                <option value="原味">原味</option>
-                <option value="沙茶">沙茶</option>
-                <option value="烤肉">烤肉</option>
-            </select>
+            <label for="flavor">口味：</label>
+            <select id="flavor" name="flavor" required>
+                <option value="原味">原味</option>
+                <option value="沙茶">沙茶</option>
+                <option value="烤肉">烤肉</option>
+            </select>
 
-            <label for="quantity">數量：</label>
-            <input type="number" id="quantity" name="quantity" min="1" value="1" required>
+            <label for="quantity">數量：</label>
+            <input type="number" id="quantity" name="quantity" min="1" value="1" required>
 
-            <button type="submit">紀錄購買</button>
-        </form>
+            <button type="submit">紀錄購買</button>
+        </form>
 
-        <div id="message" class="message" style="display:none;"></div>
-    </div>
-    
-    <div class="query-container">
-        <h2>個人購買統計查詢</h2>
-        
-        <label for="user_query">查詢身份：</label>
-        <select id="user_query" required>
-            <option value="小美">小美</option>
-            <option value="小明">小明</option>
-            <option value="大壯">大壯</option>
-            <option value="">（總計）</option> </select>
-        
-        <button onclick="fetchStats()">查詢統計</button>
-        
-        <div id="statsResult" class="stats-display">
-            <p>請選擇身份並點擊「查詢統計」。</p>
-        </div>
-    </div>
+        <div id="message" class="message" style="display:none;"></div>
+    </div>
+    
+    <div class="query-container">
+        <h2>個人購買統計查詢</h2>
+        
+        <label for="user_query">查詢身份：</label>
+        <select id="user_query" required>
+            <option value="小美">小美</option>
+            <option value="小明">小明</option>
+            <option value="大壯">大壯</option>
+            <option value="">（總計）</option> </select>
+        
+        <button onclick="fetchStats()">查詢統計</button>
+        
+        <div id="statsResult" class="stats-display">
+            <p>請選擇身份並點擊「查詢統計」。</p>
+        </div>
+    </div>
 
-    <script>
-        // *** 請將此處替換為您的 Google Apps Script 網頁應用程式網址 ***
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwy0scd1TVe82PGd99xhFSOhRXJeoUT7y4vkFahGO1WWysOlykd1Sat8o7i717-itP7/exec"; 
+    <script>
+        // *** 請將此處替換為您的 Google Apps Script 網頁應用程式網址 ***
+        const APPS_SCRIPT_URL = "<YOUR_APPS_SCRIPT_WEB_APP_URL>"; 
 
-        const form = document.getElementById('purchaseForm');
-        const messageDiv = document.getElementById('message');
-        const statsDiv = document.getElementById('statsResult');
-        const userQuerySelect = document.getElementById('user_query');
+        const form = document.getElementById('purchaseForm');
+        const messageDiv = document.getElementById('message');
+        const statsDiv = document.getElementById('statsResult');
+        const userQuerySelect = document.getElementById('user_query');
 
-        const ALL_FLAVORS = ['原味', '沙茶', '烤肉']; // 用於確保顯示順序和完整性
-        
-        /**
-         * 顯示訊息
-         */
-        function showMessage(text, type) {
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 5000);
-        }
+        const ALL_FLAVORS = ['原味', '沙茶', '烤肉']; // 用於確保顯示順序和完整性
+        
+        /**
+         * 顯示訊息
+         */
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
 
-        /**
-         * 處理表單提交 (紀錄購買)
-         */
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(form);
-            // 注意：POST 傳送的欄位名稱要與 Apps Script 的 e.parameter.user 對應
-            const data = {
-                user: formData.get('user'), 
-                flavor: formData.get('flavor'),
-                quantity: formData.get('quantity')
-            };
+        /**
+         * 處理表單提交 (紀錄購買)
+         */
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            // 注意：POST 傳送的欄位名稱要與 Apps Script 的 e.parameter.user 對應
+            const data = {
+                user: formData.get('user'), 
+                flavor: formData.get('flavor'),
+                quantity: formData.get('quantity')
+            };
 
-            try {
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams(data).toString()
-                });
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(data).toString()
+                });
 
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    showMessage('購買紀錄成功！', 'success');
-                    // 可選：紀錄成功後，自動查詢該使用者的統計
-                    userQuerySelect.value = data.user; 
-                    fetchStats(); 
-                } else {
-                    showMessage('紀錄失敗: ' + result.message, 'error');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('網路或伺服器錯誤，請檢查主控台。', 'error');
-            }
-        });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showMessage('購買紀錄成功！', 'success');
+                    // 可選：紀錄成功後，自動查詢該使用者的統計
+                    userQuerySelect.value = data.user; 
+                    fetchStats(); 
+                } else {
+                    showMessage('紀錄失敗: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('網路或伺服器錯誤，請檢查主控台。', 'error');
+            }
+        });
 
-        /**
-         * 獲取統計資料
-         */
-        async function fetchStats() {
-            statsDiv.innerHTML = '<p>查詢中...</p>';
-            
-            const selectedUser = userQuerySelect.value;
-            // 建立帶有 user 參數的 URL
-            // 如果 selectedUser 為空字串（總計），則不帶 user 參數
-            const fetchURL = selectedUser ? `${APPS_SCRIPT_URL}?user=${encodeURIComponent(selectedUser)}` : APPS_SCRIPT_URL;
+        /**
+         * 獲取統計資料
+         */
+        async function fetchStats() {
+            statsDiv.innerHTML = '<p>查詢中...</p>';
+            
+            const selectedUser = userQuerySelect.value;
+            // 建立帶有 user 參數的 URL
+            // 如果 selectedUser 為空字串（總計），則不帶 user 參數
+            const fetchURL = selectedUser ? `${APPS_SCRIPT_URL}?user=${encodeURIComponent(selectedUser)}` : APPS_SCRIPT_URL;
 
-            try {
-                const response = await fetch(fetchURL, {
-                    method: 'GET',
-                    mode: 'cors'
-                });
-                
-                const result = await response.json();
+            try {
+                const response = await fetch(fetchURL, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                const result = await response.json();
 
-                if (result.status === 'success') {
-                    const stats = result.data;
-                    const queryUser = result.user === 'All' ? '總計' : result.user;
-                    
-                    let html = `<h4>${queryUser} 的購買統計</h4>`;
-                    html += '<ul>';
-                    
-                    ALL_FLAVORS.forEach(flavor => {
-                        const total = stats.flavorCounts[flavor] || 0;
-                        html += `<li><strong>${flavor}：</strong> ${total} 包</li>`;
-                    });
-                    
-                    html += `</ul>`;
-                    html += `<p><strong>總購買數量：</strong> ${stats.totalQuantity} 包</p>`;
-                    html += `<p class="total-amount"><strong>總金額：</strong> $${stats.totalAmount.toLocaleString()} 元</p>`;
-                    
-                    statsDiv.innerHTML = html;
-                } else {
-                    statsDiv.innerHTML = `<p class="error">統計錯誤：${result.message}</p>`;
-                }
-            } catch (error) {
-                console.error('Error fetching stats:', error);
-                statsDiv.innerHTML = '<p class="error">無法載入統計資料。</p>';
-            }
-        }
+                if (result.status === 'success') {
+                    const stats = result.data;
+                    const queryUser = result.user === 'All' ? '總計' : result.user;
+                    
+                    let html = `<h4>${queryUser} 的購買統計</h4>`;
+                    html += '<ul>';
+                    
+                    ALL_FLAVORS.forEach(flavor => {
+                        const total = stats.flavorCounts[flavor] || 0;
+                        html += `<li><strong>${flavor}：</strong> ${total} 包</li>`;
+                    });
+                    
+                    html += `</ul>`;
+                    html += `<p><strong>總購買數量：</strong> ${stats.totalQuantity} 包</p>`;
+                    html += `<p class="total-amount"><strong>總金額：</strong> $${stats.totalAmount.toLocaleString()} 元</p>`;
+                    
+                    statsDiv.innerHTML = html;
+                } else {
+                    statsDiv.innerHTML = `<p class="error">統計錯誤：${result.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+                statsDiv.innerHTML = '<p class="error">無法載入統計資料。</p>';
+            }
+        }
 
-        // 頁面載入時，預設查詢總計
-        document.addEventListener('DOMContentLoaded', () => {
-             userQuerySelect.value = ""; // 設置為總計
-             fetchStats();
-        });
+        // 頁面載入時，預設查詢總計
+        document.addEventListener('DOMContentLoaded', () => {
+             userQuerySelect.value = ""; // 設置為總計
+             fetchStats();
+        });
 
-    </script>
+    </script>
 </body>
 </html>
-
