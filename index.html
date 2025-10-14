@@ -6,7 +6,13 @@
     <title>雞胸肉購買統計</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f8f8; }
-        .container, .query-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .container, .query-container { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            margin-bottom: 30px; 
+        }
         h1, h2 { text-align: center; color: #333; }
         label { display: block; margin-top: 10px; font-weight: bold; color: #555; }
         select, input[type="number"], button { 
@@ -30,47 +36,82 @@
             padding: 15px; 
             border: 1px solid #007bff; 
             border-radius: 4px; 
-            background-color: #e9f5ff;
+            background-color: #e9f5ff; 
         }
         .stats-display p { margin: 5px 0; font-size: 1.1em; }
-        .total-amount { font-size: 1.4em; color: #d9534f; font-weight: bold; margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;}
+        .total-amount { 
+            font-size: 1.4em; 
+            color: #d9534f; 
+            font-weight: bold; 
+            margin-top: 15px;
+            border-top: 1px dashed #ccc; 
+            padding-top: 10px;
+        }
         .message { margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* 新增：動態輸入框的樣式 */
+        .flavor-input-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px 0;
+            border-bottom: 1px dashed #ddd; /* 增加分隔線 */
+        }
+        .flavor-input-group:last-child {
+            border-bottom: none;
+        }
+        .flavor-input-group label {
+            flex-basis: 30%;
+            margin-top: 0;
+            font-weight: normal; /* 讓動態的標籤輕一點 */
+            color: #333;
+        }
+        .flavor-input-group .current-quantity {
+            flex-basis: 35%;
+            text-align: right;
+            font-weight: bold;
+            color: #007bff; /* 藍色顯示目前數量 */
+            margin-right: 10px;
+        }
+        .flavor-input-group input[type="number"] {
+            flex-basis: 30%;
+            padding: 5px;
+            width: auto;
+            text-align: right;
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>新增雞胸肉購買紀錄</h1>
+        <h1>新增/修改雞胸肉購買數量</h1>
 
         <form id="purchaseForm">
             <label for="user_record">購買人：</label>
-            <select id="user_record" name="user" required>
+            <select id="user_record" required>
+                <option value="" disabled selected>--- 請選擇購買人 ---</option>
                 <option value="小美">小美</option>
                 <option value="小明">小明</option>
                 <option value="大壯">大壯</option>
             </select>
+            
+            <div id="flavorInputsContainer">
+                <p style="text-align: center; color: #888; margin-top: 20px;">請先選擇購買人以載入目前的數量...</p>
+            </div>
 
-            <label for="flavor">口味：</label>
-            <select id="flavor" name="flavor" required>
-                <option value="原味">原味</option>
-                <option value="沙茶">沙茶</option>
-                <option value="烤肉">烤肉</option>
-            </select>
-
-            <label for="quantity">數量：</label>
-            <input type="number" id="quantity" name="quantity" min="1" value="1" required>
-
-            <button type="submit">紀錄購買</button>
+            <button type="submit" id="submitButton" disabled>選擇購買人以更新數量</button>
         </form>
 
         <div id="message" class="message" style="display:none;"></div>
     </div>
     
     <div class="query-container">
-        <h2>個人購買統計查詢</h2>
-        
+        <h2>個人與總購買統計查詢</h2>
+    
         <label for="user_query">查詢身份：</label>
         <select id="user_query" required>
             <option value="小美">小美</option>
@@ -79,7 +120,7 @@
             <option value="">（總計）</option> </select>
         
         <button onclick="fetchStats()">查詢統計</button>
-        
+       
         <div id="statsResult" class="stats-display">
             <p>請選擇身份並點擊「查詢統計」。</p>
         </div>
@@ -87,78 +128,48 @@
 
     <script>
         // *** 請將此處替換為您的 Google Apps Script 網頁應用程式網址 ***
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwy0scd1TVe82PGd99xhFSOhRXJeoUT7y4vkFahGO1WWysOlykd1Sat8o7i717-itP7/exec"; 
-
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwy0scd1TVe82PGd99xhFSOhRXJeoUT7y4vkFahGO1WWysOlykd1Sat8o7i717-itP7/exec";
+        
         const form = document.getElementById('purchaseForm');
+        const userRecordSelect = document.getElementById('user_record');
+        const flavorInputsContainer = document.getElementById('flavorInputsContainer');
+        const submitButton = document.getElementById('submitButton');
         const messageDiv = document.getElementById('message');
         const statsDiv = document.getElementById('statsResult');
         const userQuerySelect = document.getElementById('user_query');
-
         const ALL_FLAVORS = ['原味', '沙茶', '烤肉']; // 用於確保顯示順序和完整性
-        
+
+        // 用於儲存當前使用者各口味的「原始」購買數量
+        let originalQuantities = {}; 
+
         /**
          * 顯示訊息
-         */
+         */ 
         function showMessage(text, type) {
             messageDiv.textContent = text;
             messageDiv.className = `message ${type}`;
             messageDiv.style.display = 'block';
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 5000);
+            setTimeout(() => { messageDiv.style.display = 'none'; }, 5000);
         }
 
         /**
-         * 處理表單提交 (紀錄購買)
+         * 1. 根據選擇的使用者，從 Apps Script 獲取其當前購買數量
+         * 2. 動態生成三種口味的輸入框，並預填數量
          */
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = new FormData(form);
-            // 注意：POST 傳送的欄位名稱要與 Apps Script 的 e.parameter.user 對應
-            const data = {
-                user: formData.get('user'), 
-                flavor: formData.get('flavor'),
-                quantity: formData.get('quantity')
-            };
-
-            try {
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams(data).toString()
-                });
-
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    showMessage('購買紀錄成功！', 'success');
-                    // 可選：紀錄成功後，自動查詢該使用者的統計
-                    userQuerySelect.value = data.user; 
-                    fetchStats(); 
-                } else {
-                    showMessage('紀錄失敗: ' + result.message, 'error');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('網路或伺服器錯誤，請檢查主控台。', 'error');
+        async function fetchUserStatsAndRenderForm(user) {
+            if (!user) {
+                flavorInputsContainer.innerHTML = '<p style="text-align: center; color: #888; margin-top: 20px;">請先選擇購買人以載入目前的數量...</p>';
+                submitButton.textContent = '選擇購買人以更新數量';
+                submitButton.disabled = true;
+                return;
             }
-        });
 
-        /**
-         * 獲取統計資料
-         */
-        async function fetchStats() {
-            statsDiv.innerHTML = '<p>查詢中...</p>';
+            flavorInputsContainer.innerHTML = '<p style="text-align: center;">載入中...</p>';
+            submitButton.disabled = true;
             
-            const selectedUser = userQuerySelect.value;
-            // 建立帶有 user 參數的 URL
-            // 如果 selectedUser 為空字串（總計），則不帶 user 參數
-            const fetchURL = selectedUser ? `${APPS_SCRIPT_URL}?user=${encodeURIComponent(selectedUser)}` : APPS_SCRIPT_URL;
-
             try {
-                const response = await fetch(fetchURL, {
+                // 呼叫 Apps Script 的 doGet 接口來獲取指定使用者的統計資料
+                const response = await fetch(`${APPS_SCRIPT_URL}?user=${encodeURIComponent(user)}`, {
                     method: 'GET',
                     mode: 'cors'
                 });
@@ -167,7 +178,155 @@
 
                 if (result.status === 'success') {
                     const stats = result.data;
-                    const queryUser = result.user === 'All' ? '總計' : result.user;
+                    let html = '';
+                    
+                    // 清空原始數量紀錄
+                    originalQuantities = {};
+
+                    ALL_FLAVORS.forEach(flavor => {
+                        const total = stats.flavorCounts[flavor] || 0;
+                        originalQuantities[flavor] = total; // 紀錄原始數量
+
+                        html += `
+                            <div class="flavor-input-group">
+                                <label for="quantity_${flavor}">${flavor}：</label>
+                                <div class="current-quantity">目前: ${total} 包</div>
+                                <input 
+                                    type="number" 
+                                    id="quantity_${flavor}" 
+                                    min="0" 
+                                    value="${total}" 
+                                    data-flavor="${flavor}"
+                                    data-original="${total}"
+                                >
+                            </div>
+                        `;
+                    });
+                    
+                    flavorInputsContainer.innerHTML = html;
+                    submitButton.textContent = `更新 ${user} 的數量並記錄`;
+                    submitButton.disabled = false;
+                } else {
+                    flavorInputsContainer.innerHTML = `<p class="error">載入數量錯誤：${result.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Error fetching user stats:', error);
+                flavorInputsContainer.innerHTML = '<p class="error">無法載入統計資料。</p>';
+            }
+        }
+
+        // 監聽購買人選擇框的變化，動態載入表單
+        userRecordSelect.addEventListener('change', (e) => {
+            fetchUserStatsAndRenderForm(e.target.value);
+        });
+
+        /**
+         * 處理表單提交 (紀錄購買/更新)
+         * 這裡的邏輯是：計算「新數量」與「舊數量」的差異（淨增減量），並以「增減量」作為 Quantity 提交給 Apps Script。
+         */ 
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const user = userRecordSelect.value;
+            if (!user) return;
+
+            submitButton.disabled = true;
+            showMessage('正在提交更新...', 'message');
+            
+            const inputs = flavorInputsContainer.querySelectorAll('input[type="number"]');
+            const changeRecords = [];
+            
+            // 1. 計算淨增減量 (New Total - Old Total)
+            inputs.forEach(input => {
+                const flavor = input.dataset.flavor;
+                const newQuantity = parseInt(input.value) || 0;
+                const originalQuantity = originalQuantities[flavor]; // 使用儲存的原始數量
+                
+                const netChange = newQuantity - originalQuantity;
+                
+                if (netChange !== 0) {
+                    changeRecords.push({
+                        user: user,
+                        flavor: flavor,
+                        // 提交的數量是「淨增減量」
+                        quantity: netChange 
+                    });
+                }
+            });
+
+            if (changeRecords.length === 0) {
+                showMessage('數量未變動，無需提交。', 'success');
+                submitButton.disabled = false;
+                return;
+            }
+
+            // 2. 對每個有變動的口味，發送單獨的 POST 請求
+            let allSuccess = true;
+            for (const record of changeRecords) {
+                try {
+                    const params = new URLSearchParams({
+                        user: record.user,
+                        flavor: record.flavor,
+                        quantity: record.quantity 
+                    });
+                    
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: params.toString()
+                    });
+                    
+                    const result = await response.json();
+
+                    if (result.status !== 'success') {
+                        allSuccess = false;
+                        console.error(`提交 ${record.flavor} 錯誤:`, result.message);
+                    }
+                } catch (error) {
+                    allSuccess = false;
+                    console.error('Error submitting record:', error);
+                }
+            }
+
+            if (allSuccess) {
+                showMessage('所有更新已成功記錄！', 'success');
+                // 更新成功後，重新載入表單資料以顯示最新的總計
+                await fetchUserStatsAndRenderForm(user);
+                // 重新載入查詢統計頁面，以防在 (總計) 模式下
+                if (!userQuerySelect.value) {
+                    fetchStats();
+                } else if (userQuerySelect.value === user) {
+                    fetchStats();
+                }
+            } else {
+                showMessage('部分或全部更新提交失敗，請檢查網路或 Apps Script 紀錄。', 'error');
+            }
+            submitButton.disabled = false;
+        });
+
+
+        /**
+         * 處理 GET 請求 (查詢統計)
+         */
+        async function fetchStats() {
+            const user = userQuerySelect.value;
+            statsDiv.innerHTML = '<p>載入中...</p>';
+            
+            try {
+                // Apps Script 的 doGet 接口已能處理個人 (user=名稱) 或總計 (user='') 查詢
+                const url = user ? `${APPS_SCRIPT_URL}?user=${encodeURIComponent(user)}` : APPS_SCRIPT_URL;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    const stats = result.data;
+                    const queryUser = result.user === 'All' ? '總計' : result.user; // Apps Script 回傳 'All' 表示總計
                     
                     let html = `<h4>${queryUser} 的購買統計</h4>`;
                     html += '<ul>';
@@ -179,6 +338,7 @@
                     
                     html += `</ul>`;
                     html += `<p><strong>總購買數量：</strong> ${stats.totalQuantity} 包</p>`;
+                    // 總量頁面顯示三人的總和，現有程式碼已經實現此功能
                     html += `<p class="total-amount"><strong>總金額：</strong> $${stats.totalAmount.toLocaleString()} 元</p>`;
                     
                     statsDiv.innerHTML = html;
@@ -200,4 +360,3 @@
     </script>
 </body>
 </html>
-
