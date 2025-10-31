@@ -1,367 +1,290 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>雞胸肉購買統計</title>
+    <title>台股買賣試算 - 損益計算器 (手機友善)</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f8f8f8; }
-        .container, .query-container { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-            margin-bottom: 30px; 
+        /* 基礎 CSS 樣式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0; /* 移除外層預設邊距 */
+            background-color: #f5f5f5;
         }
-        h1, h2 { text-align: center; color: #333; }
-        label { display: block; margin-top: 10px; font-weight: bold; color: #555; }
-        select, input[type="number"], button { 
-            width: 100%; 
-            padding: 10px; 
-            margin-top: 5px; 
-            border-radius: 4px; 
-            border: 1px solid #ccc; 
-            box-sizing: border-box; 
+        .container {
+            max-width: 450px; 
+            margin: 20px auto; /* 居中並增加上下邊距 */
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        button { 
-            background: #007bff; /* 藍色按鈕 */
-            color: white; 
-            margin-top: 15px; 
-            cursor: pointer; 
-            transition: background-color 0.3s;
+        
+        /* 手機響應式設計優化 */
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+                border-radius: 0; /* 手機上移除圓角以充滿螢幕 */
+                padding: 15px;
+            }
+            body {
+                padding-top: 20px;
+            }
         }
-        button:hover { background: #0056b3; }
-        .stats-display { 
-            margin-top: 15px; 
-            padding: 15px; 
-            border: 1px solid #007bff; 
-            border-radius: 4px; 
-            background-color: #e9f5ff; 
+        
+        h2 {
+            text-align: center;
+            color: #d9534f;
         }
-        .stats-display p { margin: 5px 0; font-size: 1.1em; }
-        .total-amount { 
-            font-size: 1.4em; 
-            color: #d9534f; 
-            font-weight: bold; 
-            margin-top: 15px;
-            border-top: 1px dashed #ccc; 
-            padding-top: 10px;
+        .input-group, .result-group {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 4px;
         }
-        .message { margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-
-        /* 新增：動態輸入框的樣式 */
-        .flavor-input-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 10px 0;
-            border-bottom: 1px dashed #ddd; /* 增加分隔線 */
-        }
-        .flavor-input-group:last-child {
-            border-bottom: none;
-        }
-        .flavor-input-group label {
-            flex-basis: 30%;
-            margin-top: 0;
-            font-weight: normal; /* 讓動態的標籤輕一點 */
-            color: #333;
-        }
-        .flavor-input-group .current-quantity {
-            flex-basis: 35%;
-            text-align: right;
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
             font-weight: bold;
-            color: #007bff; /* 藍色顯示目前數量 */
+        }
+        .input-group input, .input-group select {
+            width: calc(100% - 10px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 5px;
+        }
+        /* 數量輸入和單位選擇的排版 */
+        .input-shares-container {
+            display: flex;
+            align-items: center;
+        }
+        .input-shares-container input {
+            flex-grow: 1;
             margin-right: 10px;
         }
-        .flavor-input-group input[type="number"] {
-            flex-basis: 30%;
-            padding: 5px;
-            width: auto;
-            text-align: right;
-            margin-top: 0;
+        .input-shares-container select {
+            width: 80px;
+            flex-shrink: 0; /* 避免單位被擠壓 */
         }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .result-group {
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .section-title {
+            background-color: #eee;
+            padding: 5px;
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 4px;
+        }
+        
+        /* ====== 損益顯示排版修改 ====== */
+        .profit-highlight {
+            font-size: 1.1em;
+            padding: 8px 0;
+            margin-top: 10px;
+            border-top: 2px solid #ddd;
+            display: grid; /* 使用 Grid 佈局 */
+            grid-template-columns: 1fr 1fr; /* 分成左右兩欄 */
+            font-weight: bold;
+            align-items: center;
+        }
+        .profit-highlight .label-text {
+            /* 左側文字，跨兩行 */
+            grid-row: span 2; 
+            align-self: start;
+        }
+        .profit-highlight .value {
+            text-align: right; /* 右側數值靠右對齊 */
+        }
+        .profit-highlight .amount {
+            font-size: 1.2em; /* 金額大一點 */
+        }
+        .profit-highlight .percent {
+            font-size: 0.9em; /* 百分比小一點 */
+            margin-top: -5px; /* 讓百分比靠近金額 */
+        }
+        /* 紅漲綠跌 (台灣慣例：紅賺/漲，綠賠/跌) */
+        .profit-red { color: #d9534f; } /* 紅色 */
+        .profit-green { color: #5cb85c; } /* 綠色 */
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>新增/修改雞胸肉購買數量</h1>
+<div class="container">
+    <h2>📈 台股買賣損益試算</h2>
 
-        <form id="purchaseForm">
-            <label for="user_record">購買人：</label>
-            <select id="user_record" required>
-                <option value="" disabled selected>--- 請選擇購買人 ---</option>
-                <option value="小美">小美</option>
-                <option value="小明">小明</option>
-                <option value="大壯">大壯</option>
-                </select>
-            
-            <div id="flavorInputsContainer">
-                <p style="text-align: center; color: #888; margin-top: 20px;">請先選擇購買人以載入目前的數量...</p>
-            </div>
-
-            <button type="submit" id="submitButton" disabled>選擇購買人以更新數量</button>
-        </form>
-
-        <div id="message" class="message" style="display:none;"></div>
+    <div class="input-group">
+        <label for="discount">電子下單折扣 (例如: 3折請輸入 0.3):</label>
+        <input type="number" id="discount" value="0.3" min="0" max="1" step="0.01">
     </div>
-    
-    <div class="query-container">
-        <h2>個人與總購買統計查詢</h2>
-    
-        <label for="user_query">查詢身份：</label>
-        <select id="user_query" required>
-            <option value="小美">小美</option>
-            <option value="小明">小明</option>
-            <option value="大壯">大壯</option>
-            <option value="">（總計）</option> </select>
+
+    <div class="section-title">買入資訊</div>
+    <div class="input-group">
+        <label for="buyPrice">買入價 (元):</label>
+        <input type="number" id="buyPrice" value="64.35" min="0" step="0.01">
         
-        <button onclick="fetchStats()">查詢統計</button>
-       
-        <div id="statsResult" class="stats-display">
-            <p>請選擇身份並點擊「查詢統計」。</p>
+        <label for="buyQuantity">買入數量:</label>
+        <div class="input-shares-container">
+            <input type="number" id="buyQuantity" value="1" min="0">
+            <select id="buyUnit">
+                <option value="share">股</option>
+                <option value="lot" selected>張</option>
+            </select>
         </div>
     </div>
 
-    <script>
-        // *******************************************************************
-        // *** 請將此處替換為您的 Google Apps Script 網頁應用程式網址 ***
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwy0scd1TVe82PGd99xhFSOhRXJeoUT7y4vkFahGO1WWysOlykd1Sat8o7i717-itP7/exec";
-        // *******************************************************************
+    <div class="section-title">賣出資訊</div>
+    <div class="input-group">
+        <label for="sellPrice">賣出價 (元):</label>
+        <input type="number" id="sellPrice" value="64.75" min="0" step="0.01">
         
-        const form = document.getElementById('purchaseForm');
-        const userRecordSelect = document.getElementById('user_record');
-        const flavorInputsContainer = document.getElementById('flavorInputsContainer');
-        const submitButton = document.getElementById('submitButton');
-        const messageDiv = document.getElementById('message');
-        const statsDiv = document.getElementById('statsResult');
-        const userQuerySelect = document.getElementById('user_query');
-        const ALL_FLAVORS = ['原味', '沙茶', '烤肉']; // 雞胸肉口味
+        <label for="sellQuantity">賣出數量:</label>
+        <div class="input-shares-container">
+            <input type="number" id="sellQuantity" value="1" min="0">
+            <select id="sellUnit">
+                <option value="share">股</option>
+                <option value="lot" selected>張</option>
+            </select>
+        </div>
+    </div>
 
-        // 用於儲存當前使用者各口味的「原始」購買數量
-        let originalQuantities = {}; 
+    <button onclick="calculateProfitLoss()">計算損益</button>
+    
+    <div class="result-group">
+        <div class="section-title" style="background-color: #d9edf7; color: #31708f;">交易費用與收支</div>
 
-        /**
-         * 顯示訊息
-         */ 
-        function showMessage(text, type) {
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.display = 'block';
-            setTimeout(() => { messageDiv.style.display = 'none'; }, 5000);
-        }
+        <div class="result-item"><span>買入手續費:</span> <span id="buyFee">--</span></div>
+        <div class="result-item"><span>**總支出 (買入成本):**</span> <span id="totalBuyCost">--</span></div>
+        
+        <hr>
 
-        /**
-         * 1. 根據選擇的使用者，從 Apps Script 獲取其當前購買數量
-         * 2. 動態生成三種口味的輸入框，並預填數量
-         */
-        async function fetchUserStatsAndRenderForm(user) {
-            if (!user) {
-                flavorInputsContainer.innerHTML = '<p style="text-align: center; color: #888; margin-top: 20px;">請先選擇購買人以載入目前的數量...</p>';
-                submitButton.textContent = '選擇購買人以更新數量';
-                submitButton.disabled = true;
-                return;
-            }
+        <div class="result-item"><span>賣出手續費:</span> <span id="sellFee">--</span></div>
+        <div class="result-item"><span>證券交易稅 (賣出):</span> <span id="tax">--</span></div>
+        <div class="result-item"><span>**總收入 (賣出淨額):**</span> <span id="totalSellIncome">--</span></div>
+        
+        <div class="profit-highlight">
+            <span class="label-text">淨獲利金額<br>損益率(%):</span> 
+            <span class="value amount" id="netProfitLossAmount">--</span>
+            <span class="value percent" id="netProfitLossPercent">--</span>
+        </div>
+    </div>
+</div>
 
-            flavorInputsContainer.innerHTML = '<p style="text-align: center;">載入中...</p>';
-            submitButton.disabled = true;
-            
-            try {
-                // 呼叫 Apps Script 的 doGet 接口來獲取指定使用者的統計資料
-                const response = await fetch(`${APPS_SCRIPT_URL}?user=${encodeURIComponent(user)}`, {
-                    method: 'GET',
-                    mode: 'cors'
-                });
-                
-                const result = await response.json();
+<script>
+    // JavaScript 核心計算邏輯
+    function calculateProfitLoss() {
+        // 1. 獲取輸入值
+        const discount = parseFloat(document.getElementById('discount').value) || 1;
+        const buyPrice = parseFloat(document.getElementById('buyPrice').value) || 0;
+        const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+        
+        // 處理股數 (張或股)
+        const buyQuantityInput = parseFloat(document.getElementById('buyQuantity').value) || 0;
+        const buyUnit = document.getElementById('buyUnit').value;
+        const sellQuantityInput = parseFloat(document.getElementById('sellQuantity').value) || 0;
+        const sellUnit = document.getElementById('sellUnit').value;
 
-                if (result.status === 'success') {
-                    const stats = result.data;
-                    let html = '';
-                    
-                    // 清空原始數量紀錄
-                    originalQuantities = {};
+        // 轉換為總股數 (1張 = 1000股)
+        const buyShares = buyUnit === 'lot' ? buyQuantityInput * 1000 : buyQuantityInput;
+        const sellShares = sellUnit === 'lot' ? sellQuantityInput * 1000 : sellQuantityInput;
+        
+        // 2. 定義固定費率 (台股)
+        const commissionRate = 0.001425; // 0.1425% 手續費率
+        const taxRate = 0.003;          // 0.3% 證券交易稅率
+        const minFee = 1;               // 最低手續費 1 元
 
-                    ALL_FLAVORS.forEach(flavor => {
-                        // 確保如果沒有紀錄，數量為 0
-                        const total = stats.flavorCounts[flavor] || 0;
-                        originalQuantities[flavor] = total; // 紀錄原始數量
-
-                        html += `
-                            <div class="flavor-input-group">
-                                <label for="quantity_${flavor}">${flavor}：</label>
-                                <div class="current-quantity">目前: ${total} 包</div>
-                                <input 
-                                    type="number" 
-                                    id="quantity_${flavor}" 
-                                    min="0" 
-                                    value="${total}" 
-                                    data-flavor="${flavor}"
-                                    data-original="${total}"
-                                >
-                            </div>
-                        `;
-                    });
-                    
-                    flavorInputsContainer.innerHTML = html;
-                    submitButton.textContent = `更新 ${user} 的數量並記錄`;
-                    submitButton.disabled = false;
-                } else {
-                    flavorInputsContainer.innerHTML = `<p class="error">載入數量錯誤：${result.message}</p>`;
-                }
-            } catch (error) {
-                console.error('Error fetching user stats:', error);
-                flavorInputsContainer.innerHTML = '<p class="error">無法載入統計資料。</p>';
-            }
-        }
-
-        // 監聽購買人選擇框的變化，動態載入表單
-        userRecordSelect.addEventListener('change', (e) => {
-            fetchUserStatsAndRenderForm(e.target.value);
+        // 格式化工具
+        const amountFormatter = new Intl.NumberFormat('zh-TW', { 
+            minimumFractionDigits: 2, 
+            maximumFractionDigits: 2 
+        });
+        const percentFormatter = new Intl.NumberFormat('zh-TW', { 
+            minimumFractionDigits: 1, 
+            maximumFractionDigits: 1 
         });
 
-        /**
-         * 處理表單提交 (紀錄購買/更新)
-         * 計算「新數量」與「舊數量」的差異（淨增減量），並以「增減量」（可為負數）作為 Quantity 提交給 Apps Script。
-         */ 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const user = userRecordSelect.value;
-            if (!user) return;
+        // --- 買入計算 ---
+        const buyAmount = buyPrice * buyShares;
+        let calculatedBuyFee = Math.ceil(buyAmount * commissionRate * discount); 
+        const buyFee = Math.max(calculatedBuyFee, minFee);
+        const totalBuyCost = buyAmount + buyFee; // 總支出 = 買入金額 + 買入手續費
 
-            submitButton.disabled = true;
-            showMessage('正在提交更新...', 'message');
-            
-            const inputs = flavorInputsContainer.querySelectorAll('input[type="number"]');
-            const changeRecords = [];
-            
-            // 1. 計算淨增減量 (New Total - Old Total)
-            inputs.forEach(input => {
-                const flavor = input.dataset.flavor;
-                const newQuantity = parseInt(input.value) || 0;
-                // 從儲存的原始數量中讀取
-                const originalQuantity = originalQuantities[flavor]; 
-                
-                // 計算淨增減量
-                const netChange = newQuantity - originalQuantity;
-                
-                if (netChange !== 0) {
-                    changeRecords.push({
-                        user: user,
-                        flavor: flavor,
-                        // 提交的數量是「淨增減量」，可為負數
-                        quantity: netChange 
-                    });
-                }
-            });
+        // --- 賣出計算 ---
+        const sellAmount = sellPrice * sellShares;
+        let calculatedSellFee = Math.ceil(sellAmount * commissionRate * discount);
+        const sellFee = Math.max(calculatedSellFee, minFee);
+        const tax = Math.round(sellAmount * taxRate); 
+        const totalSellIncome = sellAmount - sellFee - tax; // 總收入 = 賣出金額 - 賣出手續費 - 交易稅
 
-            if (changeRecords.length === 0) {
-                showMessage('數量未變動，無需提交。', 'success');
-                submitButton.disabled = false;
-                return;
-            }
+        // --- 損益計算 ---
+        const netProfitLoss = totalSellIncome - totalBuyCost; // 淨損益 = 總收入 - 總支出
 
-            // 2. 對每個有變動的口味，發送單獨的 POST 請求
-            let allSuccess = true;
-            for (const record of changeRecords) {
-                try {
-                    const params = new URLSearchParams({
-                        user: record.user,
-                        flavor: record.flavor,
-                        quantity: record.quantity 
-                    });
-                    
-                    const response = await fetch(APPS_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'cors',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: params.toString()
-                    });
-                    
-                    const result = await response.json();
+        // 獲利百分比 (相對於總支出)
+        const profitPercentage = totalBuyCost > 0 ? (netProfitLoss / totalBuyCost) * 100 : 0;
 
-                    if (result.status !== 'success') {
-                        allSuccess = false;
-                        console.error(`提交 ${record.flavor} 錯誤:`, result.message);
-                        // 如果有錯誤，立即通知並停止後續提交
-                        showMessage(`提交 ${record.flavor} 失敗，請檢查 Apps Script 紀錄。`, 'error');
-                        break;
-                    }
-                } catch (error) {
-                    allSuccess = false;
-                    console.error('Error submitting record:', error);
-                    showMessage('提交時發生網路錯誤。', 'error');
-                    break;
-                }
-            }
+        // 4. 顯示結果
+        
+        // 主要費用顯示
+        document.getElementById('buyFee').textContent = amountFormatter.format(buyFee);
+        document.getElementById('totalBuyCost').textContent = amountFormatter.format(totalBuyCost);
+        document.getElementById('sellFee').textContent = amountFormatter.format(sellFee);
+        document.getElementById('tax').textContent = amountFormatter.format(tax);
+        document.getElementById('totalSellIncome').textContent = amountFormatter.format(totalSellIncome);
 
-            if (allSuccess) {
-                showMessage('所有更新已成功記錄！', 'success');
-                // 更新成功後，重新載入表單資料以顯示最新的總計
-                await fetchUserStatsAndRenderForm(user);
-                // 重新載入查詢統計頁面，以防在 (總計) 模式下
-                fetchStats();
-            }
-            submitButton.disabled = false;
-        });
-
-
-        /**
-         * 處理 GET 請求 (查詢統計)
-         */
-        async function fetchStats() {
-            const user = userQuerySelect.value;
-            statsDiv.innerHTML = '<p>載入中...</p>';
-            
-            try {
-                // Apps Script 的 doGet 接口能處理個人 (user=名稱) 或總計 (user='') 查詢
-                const url = user ? `${APPS_SCRIPT_URL}?user=${encodeURIComponent(user)}` : APPS_SCRIPT_URL;
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    mode: 'cors'
-                });
-                
-                const result = await response.json();
-
-                if (result.status === 'success') {
-                    const stats = result.data;
-                    // Apps Script 會回傳 'All' 表示總計
-                    const queryUser = result.user === 'All' ? '總計 (三人總和)' : result.user; 
-                    
-                    let html = `<h4>${queryUser} 的購買統計</h4>`;
-                    html += '<ul>';
-                    
-                    ALL_FLAVORS.forEach(flavor => {
-                        const total = stats.flavorCounts[flavor] || 0;
-                        html += `<li><strong>${flavor}：</strong> ${total} 包</li>`;
-                    });
-                    
-                    html += `</ul>`;
-                    html += `<p><strong>總購買數量：</strong> ${stats.totalQuantity} 包</p>`;
-                    // 總量頁面顯示三人的總和，現有程式碼已經實現此功能
-                    html += `<p class="total-amount"><strong>總金額：</strong> $${stats.totalAmount.toLocaleString()} 元</p>`;
-                    
-                    statsDiv.innerHTML = html;
-                } else {
-                    statsDiv.innerHTML = `<p class="error">統計錯誤：${result.message}</p>`;
-                }
-            } catch (error) {
-                console.error('Error fetching stats:', error);
-                statsDiv.innerHTML = '<p class="error">無法載入統計資料。</p>';
-            }
+        // 淨損益金額與百分比顯示
+        const amountElement = document.getElementById('netProfitLossAmount');
+        const percentElement = document.getElementById('netProfitLossPercent');
+        
+        amountElement.textContent = amountFormatter.format(netProfitLoss);
+        percentElement.textContent = `(${percentFormatter.format(profitPercentage)}%)`;
+        
+        // 根據損益調整顏色 (紅賺/漲，綠賠/跌 - 依台灣慣例)
+        const colorClass = netProfitLoss > 0 ? 'profit-red' : (netProfitLoss < 0 ? 'profit-green' : '');
+        
+        // 清除舊顏色並套用新顏色
+        amountElement.classList.remove('profit-red', 'profit-green');
+        percentElement.classList.remove('profit-red', 'profit-green');
+        
+        if (colorClass) {
+            amountElement.classList.add(colorClass);
+            percentElement.classList.add(colorClass);
+        } else {
+            amountElement.style.color = 'black'; 
+            percentElement.style.color = 'black'; 
         }
+    }
 
-        // 頁面載入時，預設查詢總計
-        document.addEventListener('DOMContentLoaded', () => {
-             userQuerySelect.value = ""; // 設置為總計
-             fetchStats();
-        });
+    // 頁面載入後，監聽輸入欄位的變動並自動執行計算
+    document.querySelectorAll('input, select').forEach(element => {
+        element.addEventListener('input', calculateProfitLoss);
+    });
 
-    </script>
+    // 頁面載入後自動執行一次計算 (使用預設值)
+    document.addEventListener('DOMContentLoaded', calculateProfitLoss);
+</script>
+
 </body>
 </html>
